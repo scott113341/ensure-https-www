@@ -9,7 +9,7 @@
 Ensure your domain redirects non-https non-www requests appropriately.
 
 
-### Example
+## Example
 
 Here's how a properly configured domain looks:
 
@@ -40,7 +40,7 @@ PASS https://www.nytimes.com/es/ => https://www.nytimes.com/es/
 ```
 
 
-### Usage
+## Usage
 
 ```usage
 usage: ensure-https-www <domain> <path>
