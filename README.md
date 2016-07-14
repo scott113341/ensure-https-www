@@ -9,6 +9,39 @@
 Ensure your domain redirects non-https non-www requests appropriately.
 
 
+### Example
+
+Here's how a properly configured domain looks:
+
+```text
+$ ensure-https-www soundcasts.net /bundle.js
+PASS                http://soundcasts.net => https://www.soundcasts.net/
+PASS            http://www.soundcasts.net => https://www.soundcasts.net/
+PASS               https://soundcasts.net => https://www.soundcasts.net/
+PASS           https://www.soundcasts.net => https://www.soundcasts.net/
+PASS      http://soundcasts.net/bundle.js => https://www.soundcasts.net/bundle.js
+PASS  http://www.soundcasts.net/bundle.js => https://www.soundcasts.net/bundle.js
+PASS     https://soundcasts.net/bundle.js => https://www.soundcasts.net/bundle.js
+PASS https://www.soundcasts.net/bundle.js => https://www.soundcasts.net/bundle.js
+```
+
+And here's how an improperly configured domain looks:
+
+```text
+$ ensure-https-www nytimes.com /es/
+FAIL          http://nytimes.com => https://www.nytimes.com/ expected, but got http://www.nytimes.com/
+PASS      http://www.nytimes.com => https://www.nytimes.com/
+FAIL         https://nytimes.com => https://www.nytimes.com/ expected, but got http://www.nytimes.com/
+FAIL     https://www.nytimes.com => https://www.nytimes.com/ expected, but got http://www.nytimes.com/
+FAIL      http://nytimes.com/es/ => https://www.nytimes.com/es/ expected, but got http://www.nytimes.com/es/
+PASS  http://www.nytimes.com/es/ => https://www.nytimes.com/es/
+FAIL     https://nytimes.com/es/ => https://www.nytimes.com/es/ expected, but got http://www.nytimes.com/es/
+PASS https://www.nytimes.com/es/ => https://www.nytimes.com/es/
+```
+
+
+### Usage
+
 ```usage
 usage: ensure-https-www <domain> <path>
 

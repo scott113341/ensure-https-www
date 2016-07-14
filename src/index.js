@@ -14,14 +14,14 @@ const toRoot = `https://www.${domain}/`;
 const toPath = `https://www.${domain}${path}`;
 
 const tests = [
-  { url: `http://${domain}`,             to: toRoot, ok: null },
-  { url: `http://www.${domain}`,         to: toRoot, ok: null },
-  { url: `https://${domain}`,            to: toRoot, ok: null },
-  { url: `https://www.${domain}`,        to: toRoot, ok: null },
-  { url: `http://${domain}${path}`,      to: toPath, ok: null },
-  { url: `http://www.${domain}${path}`,  to: toPath, ok: null },
-  { url: `https://${domain}${path}`,     to: toPath, ok: null },
-  { url: `https://www.${domain}${path}`, to: toPath, ok: null },
+  { url: `http://${domain}`,             to: toRoot, ok: null, actual: null },
+  { url: `http://www.${domain}`,         to: toRoot, ok: null, actual: null },
+  { url: `https://${domain}`,            to: toRoot, ok: null, actual: null },
+  { url: `https://www.${domain}`,        to: toRoot, ok: null, actual: null },
+  { url: `http://${domain}${path}`,      to: toPath, ok: null, actual: null },
+  { url: `http://www.${domain}${path}`,  to: toPath, ok: null, actual: null },
+  { url: `https://${domain}${path}`,     to: toPath, ok: null, actual: null },
+  { url: `https://www.${domain}${path}`, to: toPath, ok: null, actual: null },
 ];
 
 const promises = tests.map(test => {
@@ -46,7 +46,8 @@ Promise.all(promises)
 
     results.forEach(result => {
       const status = result.ok ? chalk.green('PASS') : chalk.red('FAIL');
-      console.log(`${status} ${leftPad(result.url, longestUrl)} => ${result.to}`);
+      const actual = result.ok ? '' : ` expected, but got ${result.actual}`;
+      console.log(`${status} ${leftPad(result.url, longestUrl)} => ${result.to}${actual}`);
     });
 
     const anyFailed = results.find(r => r.ok !== true);
