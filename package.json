@@ -1,6 +1,6 @@
 {
   "name": "ensure-https-www",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Ensure your domain redirects non-https non-www requests appropriately.",
   "author": "Scott Hardy",
   "license": "MIT",
