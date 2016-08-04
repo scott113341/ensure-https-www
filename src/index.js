@@ -5,6 +5,8 @@ const fs = require('fs');
 const leftPad = require('left-pad');
 const request = require('superagent');
 
+const Result = require('./result.js');
+
 
 const args = process.argv.slice(2);
 const domain = args[0];
@@ -14,42 +16,45 @@ const toRoot = `https://www.${domain}/`;
 const toPath = `https://www.${domain}${path}`;
 
 const tests = [
-  { url: `http://${domain}`,             to: toRoot, ok: null, actual: null },
-  { url: `http://www.${domain}`,         to: toRoot, ok: null, actual: null },
-  { url: `https://${domain}`,            to: toRoot, ok: null, actual: null },
-  { url: `https://www.${domain}`,        to: toRoot, ok: null, actual: null },
-  { url: `http://${domain}${path}`,      to: toPath, ok: null, actual: null },
-  { url: `http://www.${domain}${path}`,  to: toPath, ok: null, actual: null },
-  { url: `https://${domain}${path}`,     to: toPath, ok: null, actual: null },
-  { url: `https://www.${domain}${path}`, to: toPath, ok: null, actual: null },
+  { url: `http://${domain}`,             to: toRoot },
+  { url: `http://www.${domain}`,         to: toRoot },
+  { url: `https://${domain}`,            to: toRoot },
+  { url: `https://www.${domain}`,        to: toRoot },
+  { url: `http://${domain}${path}`,      to: toPath },
+  { url: `http://www.${domain}${path}`,  to: toPath },
+  { url: `https://${domain}${path}`,     to: toPath },
+  { url: `https://www.${domain}${path}`, to: toPath },
 ];
 
 const promises = tests.map(test => {
   return request
     .get(test.url)
-    .redirects(0)
     .then(res => {
-      test.ok = true;
-      test.actual = test.to;
+      test.result = Result(test, res);
+      console.log(test.result);
       return test;
     })
     .catch(res => {
-      test.ok = res.response.headers.location === test.to;
+      test.ok = false;
       test.actual = res.response.headers.location;
       return test;
     });
 });
 
 Promise.all(promises)
-  .then(results => {
-    const longestUrl = [...results].sort((a, b) => b.url.length - a.url.length)[0].url.length;
+  .then(tests => {
+    const longestUrl = [...tests].sort((a, b) => b.url.length - a.url.length)[0].url.length;
 
-    results.forEach(result => {
-      const status = result.ok ? chalk.green('PASS') : chalk.red('FAIL');
-      const actual = result.ok ? '' : ` expected, but got ${result.actual}`;
-      console.log(`${status} ${leftPad(result.url, longestUrl)} => ${result.to}${actual}`);
+    tests.forEach(test => {
+      const status = test.result.status;
+      const actual = test.result.pass ? '' : ` expected, but got ${test.result.actual}`;
+      console.log(`${status} ${leftPad(test.url, longestUrl)} => ${test.to}${actual}`);
     });
 
-    const anyFailed = results.find(r => r.ok !== true);
+    const anyFailed = tests.find(r => r.ok !== true);
     if (anyFailed) process.exit(1);
+  })
+  .catch(e => {
+    console.log(e);
+    return e;
   });
