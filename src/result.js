@@ -1,30 +1,96 @@
 function Result(test, res) {
   const result = {
-    pass: '',
-    status: '',
+    message: String,
+    pass: Boolean,
+    response: res,
+    status: String,
   };
 
-  // no redirects
-  if (!res.redirects.length) {
-    console.log('no redirects');
-    result.status = test.url === test.to ? 'PASS' : 'FAIL';
-    result.actual = 'wtf';
-  }
-  else {
-    console.log('redirects', res.redirects);
-    const ok = test.to === res.headers.location;
-    const multiple = res.redirects > 1;
-    const pass = ok && !multiple;
-    result.status = pass ? 'PASS' : (
-      ok ? 'WARN' : 'FAIL'
-    );
+  const redirects = res.redirects;
+  const redirectsExpected = test.to.length > 0;
+  const redirected = redirects.length > 0;
+  const multipleRedirects = res.redirects.length > 1;
+  const ok = res.status === 200;
+  const to =  redirects[redirects.length - 1];
 
-    result.actual = 'asdfasfd';
+  // FAIL
+  // non-200 http status
+  if (!ok) {
+    result.message = `HTTP status code was ${res.status}`;
+    result.status = 'FAIL';
   }
 
+  // FAIL
+  // expected but got no redirects
+  else if (redirectsExpected && !redirected) {
+    result.message = `Expected redirect to ${test.to[0]} but was not redirected`;
+    result.status = 'FAIL';
+  }
+
+  // ????
+  // expected and got redirects
+  else if (redirectsExpected && redirected) {
+
+    // WARN
+    // multiple redirects
+    if (multipleRedirects) {
+      result.message = `Expected just one redirect, but got ${redirects.length}`;
+      result.status = 'WARN';
+    }
+
+    // PASS
+    // redirected correctly
+    else if (test.to.indexOf(to) > -1) {
+      result.message = '';
+      result.status = 'PASS';
+    }
+
+    // FAIL
+    // redirected incorrectly
+    else if (!test.to.indexOf(to) > -1) {
+      result.message = `Expected redirect to ${test.to[0]}, but was redirected to ${to}`;
+      result.status = 'FAIL';
+    }
+  }
+
+  // ????
+  // not expected but got redirected
+  else if (!redirectsExpected && redirected) {
+
+    // WARN
+    // redirected "correctly"
+    if (test.url === to) {
+      result.message = `Expected no redirects, but got ${redirects.length}`;
+      result.status = 'WARN';
+    }
+
+    // FAIL
+    // redirected incorrectly
+    else if (!test.to.indexOf(to) > -1) {
+      result.message = `Expected no redirects, but was redirected to ${to}`;
+      result.status = 'FAIL';
+    }
+
+    else neverHappen();
+  }
+
+  // PASS
+  // no redirects expected or received
+  else if (!redirectsExpected && !redirected) {
+    result.message = '';
+    result.status = 'PASS';
+  }
+
+  if (result.status === '') throw new Error('This should never happen!');
   result.pass = result.status === 'PASS';
 
   return result;
+}
+
+
+function neverHappen() {
+  throw 'this should never happen';
+
 }
 
 
