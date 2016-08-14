@@ -25,24 +25,27 @@ const tests = [
   { url: `http://${domain}/`,            to: toRoot },
   { url: `http://www.${domain}/`,        to: toRoot },
   { url: `https://${domain}/`,           to: toRoot },
-  { url: `https://www.${domain}/`,       to: toSelf  },
+  { url: `https://www.${domain}/`,       to: toSelf },
   { url: `http://${domain}${path}`,      to: toPath },
   { url: `http://www.${domain}${path}`,  to: toPath },
   { url: `https://${domain}${path}`,     to: toPath },
-  { url: `https://www.${domain}${path}`, to: toSelf  },
+  { url: `https://www.${domain}${path}`, to: toSelf },
 ];
 
 const promises = tests.map(test => {
-  return request
-    .get(test.url)
-    .then(res => {
-      test.result = Result(test, res);
-      return test;
-    })
-    .catch(err => {
-      test.result = Result(test, err.response);
-      return test;
-    });
+  return new Promise(resolve => {
+    request
+      .get(test.url)
+      .end((err, res) => {
+        var response;
+        if (err && !err.response) response = { error: err.message };
+        else if (err) response = err.response;
+        else response = res;
+
+        test.result = Result(test, response);
+        resolve(test);
+      });
+  });
 });
 
 Promise.all(promises)

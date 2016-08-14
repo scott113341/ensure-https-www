@@ -6,6 +6,16 @@ function Result(test, res) {
     status: String,
   };
 
+  // FAIL
+  // no response
+  if (res.error) {
+    result.message = res.error;
+    result.pass = false;
+    result.response = undefined;
+    result.status = 'FAIL';
+    return result;
+  }
+
   const redirects = res.redirects;
   const redirectsExpected = test.to.length > 0;
   const redirected = redirects.length > 0;
@@ -81,7 +91,7 @@ function Result(test, res) {
     result.status = 'PASS';
   }
 
-  if (result.status === '') throw new Error('This should never happen!');
+  if (result.status === String) throw new Error('This should never happen!');
   result.pass = result.status === 'PASS';
 
   return result;
